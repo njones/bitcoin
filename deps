@@ -1,0 +1,5 @@
+#!/bin/sh
+set -e
+go get github.com/steakknife/Golang-Koblitz-elliptic-curve-DSA-library/bitelliptic
+go get github.com/steakknife/Golang-Koblitz-elliptic-curve-DSA-library/bitecdsa
+go get code.google.com/p/go.crypto/ripemd160
