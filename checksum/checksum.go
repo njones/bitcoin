@@ -10,3 +10,16 @@ func Checksum(data []byte) (checksum []byte) {
     checksum = second_round.Sum(nil)[:4]
     return 
 }
+
+func Compare(checksum1, checksum2 []byte) bool {
+    if len(checksum1) != len(checksum2) {
+        return false
+    }
+    result := byte(0)
+
+    for i := 0; i < len(checksum1); i++ {
+        result |= checksum1[i] ^ checksum2[i]
+    }
+
+    return (0 == result)
+}

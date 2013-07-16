@@ -68,12 +68,12 @@ func Base58DecodeArray() []byte {
     return _Base58DecodeArray
 }
 
-func Encode(data []byte) string {
+func Encode(data []byte) (result string) {
     zero := big.NewInt(0)
     x := new(big.Int)
     x.SetBytes(data)
     remainder := big.NewInt(0)
-    result := ""
+    result = ""
 
     for x.Cmp(zero) > 0 {
         x.DivMod(x, Base58(), remainder)
@@ -85,10 +85,14 @@ func Encode(data []byte) string {
         result = fmt.Sprint("1", result)
     }
 
-    return result
+    return 
 }
 
 func Decode(encoded string) (result [] byte, err error) {
+    if 0 == len(encoded) {
+        err = errors.New("Cannot decode empty string")
+        return
+    }
     pad_bytes := 0
     var i int
     for i = 0; i < len(encoded) && "1" == string(encoded[i]); i++ {
@@ -97,7 +101,7 @@ func Decode(encoded string) (result [] byte, err error) {
     sum := big.NewInt(0)
     var decoded byte
 
-    for ; i < len(encoded); i++ {
+    for i, _ := range encoded {
         encoded_ascii := byte(encoded[i])
         if encoded_ascii >= 48 && encoded_ascii <= 127 {
             decoded = Base58DecodeArray()[encoded_ascii - 48]

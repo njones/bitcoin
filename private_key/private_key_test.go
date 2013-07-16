@@ -48,18 +48,10 @@ func Test0(t *testing.T) {
 
 func BenchmarkGenerate(b *testing.B) {
     for i := 0; i < b.N; i++ {
-        private_key, err := Generate()
+        _, err := Generate()
         if nil != err {
-            panic(fmt.Sprint("Could not generate bitcoin private key, err =", err))
+            b.Errorf(fmt.Sprint("Could not generate bitcoin private key, err =", err))
         }
-        address, err2 := private_key.PublicAddressString()
-        if nil != err2 {
-            panic(fmt.Sprint("Could not generate public address from private key, err = ", err))
-
-        }
-        wif, _ := private_key.Encode()
-        fmt.Println("WIF pk  = ", wif)
-        fmt.Println("address = ", address)
     }
 }
 
@@ -68,7 +60,7 @@ func BenchmarkSetKey(b *testing.B) {
     for i := 0; i < b.N; i++ {
         private_key, err := NewFromExponent(exponent)
         if nil != err || nil == private_key {
-            panic(fmt.Sprint("Could not generate bitcoin private key, err =", err))
+            b.Errorf(fmt.Sprint("Could not generate bitcoin private key, err =", err))
         }
     }
 }
