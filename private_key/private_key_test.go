@@ -9,16 +9,13 @@ import (
 
 
 func testCase(t *testing.T, expected_encoded_pk string, expected_decoded_exponent []byte) {
-
-    var err error
-    var pk *PrivateKey
-    
-    if pk, err = NewFromExponent(expected_decoded_exponent); nil != err {
+    pk, err := NewFromExponent(expected_decoded_exponent)
+    if err != nil {
         t.Errorf("NewFromAddress failed, err=", err)
         return
     }
-    var encoded_pk string
-    if encoded_pk, err = pk.Encode(); nil != err {
+    encoded_pk, err := pk.Encode()
+    if err != nil {
         t.Errorf("PrivateKey Encode() failed, err=", err)
         return
     }
@@ -29,12 +26,12 @@ func testCase(t *testing.T, expected_encoded_pk string, expected_decoded_exponen
     }
 
     pk, err = Decode(expected_encoded_pk)
-    if nil != err {
+    if err != nil {
         t.Errorf("Decode error %s", err)
         return
     }
 
-    if 0 != bytes.Compare(pk.PrivateKey.D.Bytes(), expected_decoded_exponent) {
+    if bytes.Compare(pk.PrivateKey.D.Bytes(), expected_decoded_exponent) != 0 {
         t.Errorf("Decode failed.  expected = %s, actual = %s", expected_decoded_exponent, pk.PrivateKey.D.Bytes())
         return
     }
@@ -49,7 +46,7 @@ func Test0(t *testing.T) {
 func BenchmarkGenerate(b *testing.B) {
     for i := 0; i < b.N; i++ {
         _, err := Generate()
-        if nil != err {
+        if err != nil {
             b.Errorf(fmt.Sprint("Could not generate bitcoin private key, err =", err))
         }
     }
@@ -59,7 +56,7 @@ func BenchmarkSetKey(b *testing.B) {
     exponent, _ := hex.DecodeString("594cfd670ac0453236816deec9ee2a4924c58e95fba992472846c1000e0adf80")
     for i := 0; i < b.N; i++ {
         private_key, err := NewFromExponent(exponent)
-        if nil != err || nil == private_key {
+        if err != nil || private_key == nil {
             b.Errorf(fmt.Sprint("Could not generate bitcoin private key, err =", err))
         }
     }

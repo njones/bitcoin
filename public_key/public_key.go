@@ -3,9 +3,9 @@ package public_key
 import (
     "bytes"
     "errors"
-    "base58"
-    "checksum"
-    "network"
+    "github.com/steakknife/bitcoin/base58"
+    "github.com/steakknife/bitcoin/checksum"
+    "github.com/steakknife/bitcoin/network"
 )
 
 type PublicKey struct {
@@ -30,26 +30,26 @@ func NewFromAddress(address []byte) (public_key *PublicKey, err error) {
 }
 
 func (public_key *PublicKey) AddressPrefix() (address_prefix byte, err error) {
-    switch public_key.Network.NetworkID {
-    case network.MainID: address_prefix = MainAddressPrefix
-    case network.TestID: address_prefix = TestAddressPrefix
-    default:             err = errors.New("Unknown NetworkID")
+    switch public_key.Network {
+        case network.Main: address_prefix = MainAddressPrefix
+        case network.Test: address_prefix = TestAddressPrefix
+        default:           err = errors.New("Unknown NetworkID")
     }
     return
 }
 
 func DecodeAddressPrefix(address_prefix byte) (network_ *network.Network, err error) {
     switch address_prefix {
-    case MainAddressPrefix: network_ = network.MainNetwork
-    case TestAddressPrefix: network_ = network.TestNetwork
-    default:                err = errors.New("Unknown Network Address Prefix")
+        case MainAddressPrefix: network_ = network.Main
+        case TestAddressPrefix: network_ = network.Test
+        default:                err = errors.New("Unknown Network Address Prefix")
     }
     return
 }
 
 func (public_key *PublicKey) Encode() (encoded string, err error) {
-    var address_prefix byte
-    if address_prefix, err = public_key.AddressPrefix(); nil != err {
+    address_prefix, err := public_key.AddressPrefix()
+    if err != nil {
         return
     }
     data := append([]byte{address_prefix}, public_key.Address...)
@@ -59,22 +59,23 @@ func (public_key *PublicKey) Encode() (encoded string, err error) {
 }
 
 func Decode(encoded string) (public_key *PublicKey, err error) {
-    var decoded []byte
-    if decoded, err = base58.Decode(encoded); nil != err {
+    decoded, err := base58.Decode(encoded)
+    if err != nil {
         return
     }
-    var network *network.Network
-    if network, err = DecodeAddressPrefix(decoded[0]); nil != err {
+    network, err := DecodeAddressPrefix(decoded[0])
+    if err != nil {
         return
     }
-    actual_checksum := checksum.Checksum(decoded[0:len(decoded)-4])
+    actual_checksum := checksum.Checksum(decoded[:len(decoded)-4])
     expected_checksum := decoded[len(decoded)-4:]
-    if 0 != bytes.Compare(actual_checksum, expected_checksum) {
+    if bytes.Compare(actual_checksum, expected_checksum) != 0 {
         err = errors.New("Checksum failure")
         return
     }
     address := decoded[1:len(decoded)-4]
-    if public_key, err = NewFromAddress(address); nil != err {
+    public_key, err := NewFromAddress(address)
+    if err != nil {
         return
     }
     public_key.Network = network

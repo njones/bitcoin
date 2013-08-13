@@ -7,7 +7,8 @@ import (
 )
 
 func testCaseDecodeFail(t *testing.T, bad_encoded string) {
-    if _, expected_err := Decode(bad_encoded) ; nil == expected_err {
+    _, expected_err := Decode(bad_encoded)
+    if expected_err == nil {
         t.Errorf("Should not have decoded %s", bad_encoded)
         return
     }
@@ -20,11 +21,11 @@ func testCaseSuccess(t *testing.T, expected_encoded string, expected_decoded []b
         return
     }
     decoded, err := Decode(expected_encoded)
-    if nil != err {
+    if err != nil {
         t.Errorf("Decode error %s", err)
         return
     }
-    if 0 != bytes.Compare(expected_decoded, decoded) {
+    if bytes.Compare(expected_decoded, decoded) != 0 {
         t.Errorf("Decode failed.  expected = %s, actual = %s", expected_decoded, decoded)
         return
     }
@@ -58,6 +59,6 @@ func TestDecodeShouldFail(t *testing.T) {
     bad_encoded_cases := []string { "", "abcd;", "0", "zI", "OV", "llll", "." }
 
     for _, bad_encoded := range bad_encoded_cases {
-        testCaseDecodeFail(t, bad_encoded) 
+        testCaseDecodeFail(t, bad_encoded)
     }
 }

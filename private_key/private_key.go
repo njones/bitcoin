@@ -1,7 +1,6 @@
 package private_key
 
 import (
-//    "fmt"
     "bytes"
     "math/big"
     "errors"
@@ -10,15 +9,15 @@ import (
     "crypto/sha256"
     "github.com/steakknife/Golang-Koblitz-elliptic-curve-DSA-library/bitelliptic"
     "github.com/steakknife/Golang-Koblitz-elliptic-curve-DSA-library/bitecdsa"
-    "base58"
-    "network"
-    "public_key"
-    "checksum"
+    "github.com/steakknife/bitcoin/base58"
+    "github.com/steakknife/bitcoin/network"
+    "github.com/steakknife/bitcoin/public_key"
+    "github.com/steakknife/bitcoin/checksum"
 )
 
 type PrivateKey struct {
     *network.Network
-    *bitecdsa.PrivateKey 
+    *bitecdsa.PrivateKey
 }
 
 const ExponentSize = 32 // bytes
@@ -26,22 +25,20 @@ const MainAddressPrefix = byte(0x80)
 const TestAddressPrefix = byte(0xEF)
 
 func Generate() (private_key *PrivateKey, err error) {
-    var ecdsa_private_key *bitecdsa.PrivateKey
-    if ecdsa_private_key, err = bitecdsa.GenerateKey(bitelliptic.S256(), rand.Reader); nil != err {
+    ecdsa_private_key, err := bitecdsa.GenerateKey(bitelliptic.S256(), rand.Reader)
+    if err != nil {
         return
     }
     private_key_ := &PrivateKey {
-        Network: network.MainNetwork,
+        Network: network.Main,
         PrivateKey: ecdsa_private_key,
     }
-    private_key_encoded, err2 := private_key_.Encode()
-    if nil != err2 {
-        err = err2
+    private_key_encoded, err := private_key_.Encode()
+    if err != nil {
         return
     }
-    private_key_decoded, err3 := Decode(private_key_encoded)
-    if nil != err3 || nil == private_key_decoded {
-        err = err3
+    private_key_decoded, err := Decode(private_key_encoded)
+    if err != nil || private_key_decoded == nil {
         return
     }
     private_key = private_key_
@@ -53,9 +50,9 @@ func NewFromExponent(exponent []byte) (private_key *PrivateKey, err error) {
         err = errors.New("Exponent of wrong size")
         return
     }
-    
+
     private_key = &PrivateKey {
-        Network: network.MainNetwork,
+        Network: network.Main,
         PrivateKey: bitecdsa.SetKey(bitelliptic.S256(), new(big.Int).SetBytes(exponent)),
     }
     return
@@ -98,26 +95,26 @@ func (private_key *PrivateKey) PublicAddress() (public_address []byte) {
 }
 
 func (private_key *PrivateKey) AddressPrefix() (address_prefix byte, err error) {
-    switch private_key.Network.NetworkID {
-    case network.MainID: address_prefix = MainAddressPrefix
-    case network.TestID: address_prefix = TestAddressPrefix
-    default:             err = errors.New("Unknown NetworkID")
+    switch private_key.Network {
+        case network.Main: address_prefix = MainAddressPrefix
+        case network.Test: address_prefix = TestAddressPrefix
+        default:           err = errors.New("Unknown NetworkID")
     }
     return
 }
 
 func DecodeAddressPrefix(address_prefix byte) (network_ *network.Network, err error) {
     switch address_prefix {
-    case MainAddressPrefix: network_ = network.MainNetwork
-    case TestAddressPrefix: network_ = network.TestNetwork
-    default:                err = errors.New("Unknown Network Address Prefix")
+        case MainAddressPrefix: network_ = network.Main
+        case TestAddressPrefix: network_ = network.Test
+        default:                err = errors.New("Unknown Network Address Prefix")
     }
     return
 }
 
 func (private_key *PrivateKey) Encode() (result string, err error) {
-    var address_prefix byte
-    if address_prefix, err = private_key.AddressPrefix(); nil != err {
+    address_prefix, err := private_key.AddressPrefix()
+    if err != nil {
         return
     }
     exponent := PadToSize(private_key.PrivateKey.D.Bytes(), 32)
@@ -129,22 +126,23 @@ func (private_key *PrivateKey) Encode() (result string, err error) {
 }
 
 func Decode(encoded string) (private_key *PrivateKey, err error) {
-    var decoded []byte
-    if decoded, err = base58.Decode(encoded); nil != err {
+    decoded, err := base58.Decode(encoded)
+    if err != nil {
         return
     }
-    var network_ *network.Network
-    if network_, err = DecodeAddressPrefix(decoded[0]); nil != err {
+    network_, err := DecodeAddressPrefix(decoded[0])
+    if err != nil {
         return
     }
-    actual_checksum := checksum.Checksum(decoded[0:len(decoded)-4])
+    actual_checksum := checksum.Checksum(decoded[:len(decoded)-4])
     expected_checksum := decoded[len(decoded)-4:]
-    if 0 != bytes.Compare(actual_checksum, expected_checksum) {
+    if bytes.Compare(actual_checksum, expected_checksum) != 0{
         err = errors.New("Checksum failure")
         return
     }
     exponent := decoded[1:len(decoded)-4]
-    if private_key, err = NewFromExponent(exponent); nil != err {
+    private_key, err = NewFromExponent(exponent)
+    if err != nil {
         return
     }
     private_key.Network = network_

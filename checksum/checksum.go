@@ -8,7 +8,7 @@ func Checksum(data []byte) (checksum []byte) {
     second_round := sha256.New()
     second_round.Write(first_round.Sum(nil))
     checksum = second_round.Sum(nil)[:4]
-    return 
+    return
 }
 
 func Compare(checksum1, checksum2 []byte) bool {
@@ -21,5 +21,5 @@ func Compare(checksum1, checksum2 []byte) bool {
         result |= checksum1[i] ^ checksum2[i]
     }
 
-    return (0 == result)
+    return (result == 0)
 }

@@ -14,15 +14,13 @@ import (
 
 
 func testCase(t *testing.T, expected_encoded_address string, expected_decoded_address []byte) {
-    
-    var err error
-    var address *PublicKey
-    if address, err = NewFromAddress(expected_decoded_address); nil != err {
+    address, err := NewFromAddress(expected_decoded_address)
+    if err != nil {
         t.Errorf("NewFromAddress failed, err=", err)
         return
     }
-    var encoded_address string
-    if encoded_address, err = address.Encode(); nil != err {
+    encoded_address, err := address.Encode()
+    if err != nil {
         t.Errorf("PublicKey Encode() failed, err=", err)
         return
     }
@@ -38,7 +36,7 @@ func testCase(t *testing.T, expected_encoded_address string, expected_decoded_ad
         return
     }
 
-    if 0 != bytes.Compare(decoded_address.Address, expected_decoded_address) {
+    if bytes.Compare(decoded_address.Address, expected_decoded_address) != 0 {
         t.Errorf("Decode failed.  expected = %s, actual = %s", expected_decoded_address, decoded_address.Address)
         return
     }
