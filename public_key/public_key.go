@@ -13,9 +13,11 @@ type PublicKey struct {
     Address          []byte
 }
 
-const AddressSize = 20 // bytes
-const MainAddressPrefix = byte(0x00)
-const TestAddressPrefix = byte(0x6F)
+const (
+    AddressSize = 20 // bytes
+    MainAddressPrefix = byte(0x00)
+    TestAddressPrefix = byte(0x6F)
+)
 
 func NewFromAddress(address []byte) (public_key *PublicKey, err error) {
     if AddressSize != len(address) {

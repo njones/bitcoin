@@ -20,9 +20,11 @@ type PrivateKey struct {
     *bitecdsa.PrivateKey
 }
 
-const ExponentSize = 32 // bytes
-const MainAddressPrefix = byte(0x80)
-const TestAddressPrefix = byte(0xEF)
+const (
+    ExponentSize = 32 // bytes
+    MainAddressPrefix = byte(0x80)
+    TestAddressPrefix = byte(0xEF)
+)
 
 func Generate() (private_key *PrivateKey, err error) {
     ecdsa_private_key, err := bitecdsa.GenerateKey(bitelliptic.S256(), rand.Reader)

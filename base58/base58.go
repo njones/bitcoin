@@ -41,7 +41,7 @@ var (
     }
 
 
-    _base58 = func() *big.Int {
+    base58_ = func() *big.Int {
         b58 := new(big.Int)
         b58.SetBytes([]byte{58})
         return b58
@@ -56,7 +56,7 @@ func Encode(data []byte) (result string) {
     result = ""
 
     for x.Cmp(zero) > 0 {
-        x.DivMod(x, _base58, remainder)
+        x.DivMod(x, base58_, remainder)
         encoded := string(base58EncodeString[remainder.Int64()])
         result = fmt.Sprint(encoded, result)
     }
@@ -75,7 +75,7 @@ func Decode(encoded string) (result []byte, err error) {
     }
     pad_bytes := 0
     var i int
-    for i = 0; i < len(encoded) && "1" == string(encoded[i]); i++ {
+    for i = 0; i < len(encoded) && string(encoded[i]) == 1; i++ {
         pad_bytes++
     }
     sum := big.NewInt(0)
@@ -92,7 +92,7 @@ func Decode(encoded string) (result []byte, err error) {
             err = fmt.Errorf("Bad character encountered")
             return
         }
-        sum.Add(sum.Mul(sum, _base58), big.NewInt(int64(decoded)))
+        sum.Add(sum.Mul(sum, base58_), big.NewInt(int64(decoded)))
     }
     b := sum.Bytes()
     result = make([]byte, pad_bytes + len(b))
