@@ -1,8 +1,8 @@
 package base58
 
 import (
-    "math/big"
-    "fmt"
+	"fmt"
+	"math/big"
 )
 
 /*
@@ -21,84 +21,91 @@ n   b58 n   b58 n   b58 n   b58
 44  m   45  n   46  o   47  p
 48  q   49  r   50  s   51  t
 52  u   53  v   54  w   55  x
-56  y   57  z 
+56  y   57  z
 */
 
 const base58EncodeString = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz"
 
 var (
-    base58DecodeArray = []byte {
-        // 48 .. 63
-          0xff,  0,  1,  2,  3,  4,  5,  6,  7,  8, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
-        // 64 .. 79
-          0xff,  9, 10, 11, 12, 13, 14, 15, 16, 0xff, 17, 18, 19, 20, 21, 0xff,
-        // 80 .. 95
-            22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 0xff, 0xff, 0xff, 0xff, 0xff,
-        // 96 .. 111
-          0xff, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 0xff, 44, 45, 46,
-        // 112 ... 127
-            47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 0xff, 0xff, 0xff, 0xff, 0xff, 
-    }
+	base58DecodeArray = []byte{
+		// 48 .. 63
+		0xff, 0, 1, 2, 3, 4, 5, 6, 7, 8, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+		// 64 .. 79
+		0xff, 9, 10, 11, 12, 13, 14, 15, 16, 0xff, 17, 18, 19, 20, 21, 0xff,
+		// 80 .. 95
+		22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 0xff, 0xff, 0xff, 0xff, 0xff,
+		// 96 .. 111
+		0xff, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 0xff, 44, 45, 46,
+		// 112 ... 127
+		47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 0xff, 0xff, 0xff, 0xff, 0xff,
+	}
 
-
-    base58_ = func() *big.Int {
-        b58 := new(big.Int)
-        b58.SetBytes([]byte{58})
-        return b58
-    }()
+	base58_ = func() *big.Int {
+		b58 := new(big.Int)
+		b58.SetBytes([]byte{58})
+		return b58
+	}()
 )
 
 func Encode(data []byte) (result string) {
-    zero := big.NewInt(0)
-    x := new(big.Int)
-    x.SetBytes(data)
-    remainder := big.NewInt(0)
-    result = ""
+	zero := big.NewInt(0)
+	x := new(big.Int)
+	x.SetBytes(data)
+	remainder := big.NewInt(0)
+	result = ""
 
-    for x.Cmp(zero) > 0 {
-        x.DivMod(x, base58_, remainder)
-        encoded := string(base58EncodeString[remainder.Int64()])
-        result = fmt.Sprint(encoded, result)
-    }
+	for x.Cmp(zero) > 0 {
+		x.DivMod(x, base58_, remainder)
+		encoded := string(base58EncodeString[remainder.Int64()])
+		result = fmt.Sprint(encoded, result)
+	}
 
-    for i := 0; i < len(data) && 0 == data[i]; i++ {
-        result = fmt.Sprint("1", result)
-    }
+	for i := 0; i < len(data) && 0 == data[i]; i++ {
+		result = fmt.Sprint("1", result)
+	}
 
-    return
+	return
+}
+
+func decodeAscii(ch uint8) (decoded byte, err error) {
+	if ch >= 48 && ch <= 127 {
+		decoded = base58DecodeArray[ch-48]
+	} else {
+		decoded = byte(0xff)
+	}
+	if decoded == 0xff {
+		err = fmt.Errorf("Bad character encountered")
+		decoded = 0xff
+	}
+	return
 }
 
 func Decode(encoded string) (result []byte, err error) {
-    if len(encoded) == 0 {
-        err = fmt.Errorf("Cannot decode empty string")
-        return
-    }
-    pad_bytes := 0
-    var i int
-    for i = 0; i < len(encoded) && string(encoded[i]) == 1; i++ {
-        pad_bytes++
-    }
-    sum := big.NewInt(0)
-    var decoded byte
+	if len(encoded) == 0 {
+		err = fmt.Errorf("Cannot decode empty string")
+		return
+	}
+	pad_bytes := 0
+	var i int
+	for i = 0; i < len(encoded) && encoded[i] == '1'; i++ {
+		pad_bytes++
+	}
+	sum := big.NewInt(0)
 
-    for i, _ := range encoded {
-        encoded_ascii := byte(encoded[i])
-        if encoded_ascii >= 48 && encoded_ascii <= 127 {
-            decoded = base58DecodeArray[encoded_ascii - 48]
-        } else {
-            decoded = byte(0xff)
-        }
-        if decoded == 0xff {
-            err = fmt.Errorf("Bad character encountered")
-            return
-        }
-        sum.Add(sum.Mul(sum, base58_), big.NewInt(int64(decoded)))
-    }
-    b := sum.Bytes()
-    result = make([]byte, pad_bytes + len(b))
-    for i := 0; i < pad_bytes; i++ {
-        result = append(result, 0)
-    }
-    result = append(result, b...)
-    return
+	for ; i < len(encoded); i++ {
+		var decoded byte
+		decoded, err = decodeAscii(encoded[i])
+		if err != nil {
+			return
+		}
+		sum.Add(sum.Mul(sum, base58_), big.NewInt(int64(decoded)))
+	}
+	b := sum.Bytes()
+
+	result = make([]byte, 0, pad_bytes+len(b))
+	for i := 0; i < pad_bytes; i++ {
+		result = append(result, 0)
+	}
+	result = append(result, b...)
+	return
 }
