@@ -6,6 +6,7 @@ import (
 	"github.com/steakknife/bitcoin/public_key"
 	"github.com/steakknife/bitcoin/util/key"
 	"golang.org/x/crypto/ripemd160"
+	"math/big"
 )
 
 type PrivateKey struct {
@@ -96,15 +97,35 @@ func (pk PrivateKey) PrivateAddressPrefix() (pubAddrPrefix byte, err error) {
 	return pk.Network.PrivateAddressPrefix()
 }
 
-func (pk PrivateKey) PublicAddress() (publicAddr []byte) {
-	pubKey := pk.privateKey.PublicKey
+func (pk PrivateKey) X() *big.Int {
+	return pk.privateKey.PublicKey.X
+}
 
+func (pk PrivateKey) Y() *big.Int {
+	return pk.privateKey.PublicKey.Y
+}
+
+func (pk PrivateKey) XBytes() []byte {
+	return pk.privateKey.PublicKey.XBytes()
+}
+
+func (pk PrivateKey) YBytes() []byte {
+	return pk.privateKey.PublicKey.YBytes()
+}
+
+func (pk PrivateKey) XBytesPadded() []byte {
+	return padToSize(pk.XBytes(), ExponentSize)
+}
+
+func (pk PrivateKey) YBytesPadded() []byte {
+	return padToSize(pk.YBytes(), ExponentSize)
+}
+
+func (pk PrivateKey) PublicAddress() (publicAddr []byte) {
 	firstRound := sha256.New()
 	firstRound.Write(publicAddrFirstRoundFirstByte)
-	x := padToSize(pubKey.XBytes(), ExponentSize)
-	firstRound.Write(x)
-	y := padToSize(pubKey.YBytes(), ExponentSize)
-	firstRound.Write(y)
+	firstRound.Write(pk.XBytesPadded())
+	firstRound.Write(pk.YBytesPadded())
 
 	secondRound := ripemd160.New()
 	secondRound.Write(firstRound.Sum(nil))
