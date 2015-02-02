@@ -1,9 +1,9 @@
-package private_key
+package private
 
 import (
 	"crypto/sha256"
+	"github.com/steakknife/bitcoin/addr/public"
 	"github.com/steakknife/bitcoin/network"
-	"github.com/steakknife/bitcoin/public_key"
 	"github.com/steakknife/bitcoin/util/key"
 	"golang.org/x/crypto/ripemd160"
 	"math/big"

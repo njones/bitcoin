@@ -1,4 +1,4 @@
-package private_key
+package private
 
 import (
 	"crypto/elliptic"

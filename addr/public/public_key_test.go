@@ -1,4 +1,4 @@
-package public_key
+package public
 
 import (
 	"bytes"
