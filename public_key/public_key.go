@@ -1,91 +1,73 @@
 package public_key
 
 import (
-	"bytes"
-	"errors"
-	"github.com/steakknife/bitcoin/base58"
-	"github.com/steakknife/bitcoin/checksum"
+	"fmt"
 	"github.com/steakknife/bitcoin/network"
+	"github.com/steakknife/bitcoin/util/key"
 )
+
+const AddressSize = 20 // bytes
 
 type PublicKey struct {
 	network.Network
 	Address []byte
 }
 
-const (
-	AddressSize       = 20 // bytes
-	MainAddressPrefix = byte(0x00)
-	TestAddressPrefix = byte(0x6F)
-)
-
-func NewFromAddress(address []byte) (public_key *PublicKey, err error) {
-	if AddressSize != len(address) {
-		err = errors.New("Bitcoin address has incorrect number of bytes")
-		return
+func NewFromNetworkAndAddress(net network.Network, address []byte) (pubKey *PublicKey, err error) {
+	if len(address) != AddressSize {
+		return nil, fmt.Errorf("Bitcoin address has incorrect number of byte(s), actual: %d, expected: %d", len(address), AddressSize)
 	}
-	public_key = &PublicKey{
-		Network: network.Main,
+	return &PublicKey{
+		Network: net,
 		Address: address,
+	}, nil
+}
+
+func NewFromAddress(address []byte) (pubKey *PublicKey, err error) {
+	return NewFromNetworkAndAddress(network.Main, address)
+}
+
+func (pubKey PublicKey) PublicAddressPrefix() (addrPrefix byte, err error) {
+	return pubKey.Network.PublicAddressPrefix()
+}
+
+func (pubKey PublicKey) Encode() (encoded string, err error) {
+	addrPrefix, err := pubKey.PublicAddressPrefix()
+	if err != nil {
+		return
+	}
+	data := append([]byte{addrPrefix}, pubKey.Address...)
+	return key.Encode(data), nil
+}
+
+func (pubKey PublicKey) MustEncode() (encoded string) {
+	encoded, err := pubKey.Encode()
+	if err != nil {
+		panic(err)
 	}
 	return
 }
 
-func (public_key *PublicKey) AddressPrefix() (address_prefix byte, err error) {
-	switch public_key.Network {
-	case network.Main:
-		address_prefix = MainAddressPrefix
-	case network.Test:
-		address_prefix = TestAddressPrefix
-	default:
-		err = errors.New("Unknown NetworkID")
-	}
-	return
+func (pubKey PublicKey) String() string {
+	return pubKey.MustEncode()
 }
 
-func DecodeAddressPrefix(address_prefix byte) (network_ network.Network, err error) {
-	switch address_prefix {
-	case MainAddressPrefix:
-		network_ = network.Main
-	case TestAddressPrefix:
-		network_ = network.Test
-	default:
-		err = errors.New("Unknown Network Address Prefix")
+func Decode(encoded string) (pubKey *PublicKey, err error) {
+	decoded, err := key.Decode(encoded)
+	if err != nil {
+		return
 	}
-	return
+	network, err := network.DecodePublicAddressPrefix(decoded[0])
+	if err != nil {
+		return
+	}
+	return NewFromNetworkAndAddress(network, decoded[1:])
 }
 
-func (public_key *PublicKey) Encode() (encoded string, err error) {
-	address_prefix, err := public_key.AddressPrefix()
+func MustDecode(encoded string) (pubKey *PublicKey) {
+	pubKey, err := Decode(encoded)
 	if err != nil {
-		return
+		panic(err)
 	}
-	data := append([]byte{address_prefix}, public_key.Address...)
-	data = append(data, checksum.Checksum(data)...)
-	encoded = base58.Encode(data)
-	return
-}
-
-func Decode(encoded string) (public_key *PublicKey, err error) {
-	decoded, err := base58.Decode(encoded)
-	if err != nil {
-		return
-	}
-	network, err := DecodeAddressPrefix(decoded[0])
-	if err != nil {
-		return
-	}
-	actual_checksum := checksum.Checksum(decoded[:len(decoded)-4])
-	expected_checksum := decoded[len(decoded)-4:]
-	if bytes.Compare(actual_checksum, expected_checksum) != 0 {
-		err = errors.New("Checksum failure")
-		return
-	}
-	address := decoded[1 : len(decoded)-4]
-	public_key, err = NewFromAddress(address)
-	if err != nil {
-		return
-	}
-	public_key.Network = network
 	return
 }
