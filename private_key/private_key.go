@@ -10,7 +10,7 @@ import (
 
 type PrivateKey struct {
 	network.Network
-	PrivateKey ECDSAPrivateKey
+	privateKey ECDSAPrivateKey
 }
 
 var publicAddrFirstRoundFirstByte = []byte{0x04}
@@ -28,7 +28,7 @@ func (pk PrivateKey) Encodable() (err error) {
 func NewPrivateKey(net network.Network, ecdsaPk ECDSAPrivateKey) (pk *PrivateKey, err error) {
 	_pk := &PrivateKey{
 		Network:    net,
-		PrivateKey: ecdsaPk,
+		privateKey: ecdsaPk,
 	}
 	err = _pk.Encodable()
 	if err == nil {
@@ -61,7 +61,7 @@ func NewFromNetworkAndExponent(network network.Network, exponent []byte) (pk *Pr
 	}
 	return &PrivateKey{
 		Network:    network,
-		PrivateKey: *ecdsa,
+		privateKey: *ecdsa,
 	}, nil
 }
 
@@ -77,7 +77,7 @@ func (pk PrivateKey) PublicKey() *public_key.PublicKey {
 }
 
 func (pk PrivateKey) Exponent() []byte {
-	return padToSize(pk.PrivateKey.priv, ExponentSize)
+	return padToSize(pk.privateKey.priv, ExponentSize)
 }
 
 func padToSize(buf []byte, sz int) []byte {
@@ -96,14 +96,14 @@ func (pk PrivateKey) PrivateAddressPrefix() (pubAddrPrefix byte, err error) {
 	return pk.Network.PrivateAddressPrefix()
 }
 
-func (pk *PrivateKey) PublicAddress() (publicAddr []byte) {
-	pubKey := pk.PrivateKey.PublicKey
+func (pk PrivateKey) PublicAddress() (publicAddr []byte) {
+	pubKey := pk.privateKey.PublicKey
 
 	firstRound := sha256.New()
 	firstRound.Write(publicAddrFirstRoundFirstByte)
-	x := padToSize(pubKey.X.Bytes(), ExponentSize)
+	x := padToSize(pubKey.XBytes(), ExponentSize)
 	firstRound.Write(x)
-	y := padToSize(pubKey.Y.Bytes(), ExponentSize)
+	y := padToSize(pubKey.YBytes(), ExponentSize)
 	firstRound.Write(y)
 
 	secondRound := ripemd160.New()

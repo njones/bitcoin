@@ -16,6 +16,6 @@ func (net Network) String() string {
 	case Test:
 		return "Test"
 	default:
-		return fmt.Sprintf("Unknown btc network %d (0x%02X)", net, net)
+		return fmt.Sprintf("Unknown btc network %d (0x%02X)", int(net), int(net))
 	}
 }

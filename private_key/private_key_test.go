@@ -31,8 +31,8 @@ func testCase(t *testing.T, expected_encoded_pk string, expected_decoded_exponen
 		return
 	}
 
-	if bytes.Compare(pk.PrivateKey.priv, expected_decoded_exponent) != 0 {
-		t.Errorf("Decode failed.\nexpected: %s\n  actual: %s", expected_decoded_exponent, pk.PrivateKey.priv)
+	if bytes.Compare(pk.privateKey.priv, expected_decoded_exponent) != 0 {
+		t.Errorf("Decode failed.\nexpected: %s\n  actual: %s", expected_decoded_exponent, pk.privateKey.priv)
 		return
 	}
 }

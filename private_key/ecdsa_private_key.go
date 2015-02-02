@@ -5,6 +5,7 @@ import (
 	"crypto/rand"
 	"fmt"
 	"github.com/sour-is/koblitz/kelliptic"
+	"math/big"
 )
 
 const ExponentSize = 32 // bytes
@@ -30,4 +31,20 @@ func NewECDSAPrivateKeyFromExponent(exponent []byte) (pk *ECDSAPrivateKey, err e
 	pk.priv = make([]byte, ExponentSize, ExponentSize)
 	copy(pk.priv, exponent)
 	return
+}
+
+func (pk ECDSAPrivateKey) XBytes() []byte {
+	return pk.PublicKey.XBytes()
+}
+
+func (pk ECDSAPrivateKey) YBytes() []byte {
+	return pk.PublicKey.YBytes()
+}
+
+func (pk ECDSAPrivateKey) X() *big.Int {
+	return pk.PublicKey.X
+}
+
+func (pk ECDSAPrivateKey) Y() *big.Int {
+	return pk.PublicKey.Y
 }
