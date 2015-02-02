@@ -58,4 +58,4 @@ MIT
 
 ## Copyright
 
-Copyright (C) 2014,2015 Barry Allard
+Copyright (C) 2013-2015 Barry Allard
