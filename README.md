@@ -22,7 +22,7 @@ import btcpub "github.com/steakknife/bitcoin/public_key"
 pubKey := btcpub.MustDecode("19Bq1gipWrLxFGqVH41Un2suWnGzWxNjbZ")
 
 fmt.Printf("BTC public key: %s\n", pubKey)
-fmt.Printf("  network: %s (%d, 0x%02X)\n", pubKey.Network, pubKey.Network, pubKey.Network)
+fmt.Printf("  network: %s (%d, 0x%02X)\n", pubKey.Network, int(pubKey.Network), int(pubKey.Network))
 fmt.Printf("  address: %v\n", pubKey.Address)
 ```
 
@@ -33,7 +33,7 @@ import btcpk "github.com/steakknife/bitcoin/private_key"
 privKey := btcpk.MustDecode("5Ju6hf57BPdusMDUg4C6gPKiauXSahHVnTGmTNHoJeGUwJHeqSY")
 
 fmt.Printf("BTC private key: %s\n", privKey)
-fmt.Printf("    network: %s (%d, 0x%02X)\n", privKey.Network, privKey.Network, privKey.Network)
+fmt.Printf("    network: %s (%d, 0x%02X)\n", privKey.Network, int(privKey.Network), int(privKey.Network))
 fmt.Printf("   exponent: %v\n", privKey.Exponent())
 fmt.Printf(" public key: %s\n", privKey.PublicKey())
 fmt.Printf("              X: %v\n", privKey.XBytes())
