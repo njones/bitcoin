@@ -27,7 +27,15 @@ func NewECDSAPrivateKeyFromExponent(exponent []byte) (pk *ECDSAPrivateKey, err e
 		return nil, fmt.Errorf("Exponent of wrong size, expected: %d, actual: %d", ExponentSize, len(exponent))
 	}
 	pk = &ECDSAPrivateKey{}
-	pk.PublicKey.X, pk.PublicKey.Y = elliptic.Unmarshal(s256, exponent)
+	pk.PublicKey.X, pk.PublicKey.Y = s256.ScalarBaseMult(exponent)
+	if pk.PublicKey.X == nil {
+		err = fmt.Errorf("pk.PublicKey.X == nil, exponent: %v", exponent)
+		return
+	}
+	if pk.PublicKey.Y == nil {
+		err = fmt.Errorf("pk.PublicKey.Y == nil, exponent: %v", exponent)
+		return
+	}
 	pk.priv = make([]byte, ExponentSize, ExponentSize)
 	copy(pk.priv, exponent)
 	return
