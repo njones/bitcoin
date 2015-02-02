@@ -13,7 +13,7 @@ var (
 func (net Network) PrivateAddressPrefix() (addrPrefix byte, err error) {
 	a, ok := privateNetworksToPrefixes[net]
 	if !ok {
-		return 0, fmt.Errorf("Unknown bitcoin private network ID (enum): %d", net)
+		return 0, fmt.Errorf("%s", net)
 	}
 	return a, nil
 }
@@ -21,7 +21,7 @@ func (net Network) PrivateAddressPrefix() (addrPrefix byte, err error) {
 func DecodePrivateAddressPrefix(addrPrefix byte) (net Network, err error) {
 	n, ok := privatePrefixesToNetworks[addrPrefix]
 	if !ok {
-		return 0, fmt.Errorf("Unknown bitcoin private network address prefix %02x", addrPrefix)
+		return 0, fmt.Errorf("Unknown bitcoin private network address prefix %d (0x%02x)", addrPrefix, addrPrefix)
 	}
 	return n, nil
 }

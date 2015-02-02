@@ -76,6 +76,10 @@ func (pk PrivateKey) PublicKey() *public_key.PublicKey {
 	}
 }
 
+func (pk PrivateKey) Exponent() []byte {
+	return padToSize(pk.PrivateKey.priv, ExponentSize)
+}
+
 func padToSize(buf []byte, sz int) []byte {
 	return append(make([]byte, sz-len(buf), sz), buf...)
 }
@@ -114,8 +118,7 @@ func (pk PrivateKey) Encode() (result string, err error) {
 	if err != nil {
 		return
 	}
-	exponent := padToSize(pk.PrivateKey.priv, ExponentSize)
-	data := append([]byte{addrPrefix}, exponent...)
+	data := append([]byte{addrPrefix}, pk.Exponent()...)
 
 	return key.Encode(data), nil
 }
