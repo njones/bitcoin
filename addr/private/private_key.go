@@ -2,11 +2,12 @@ package private
 
 import (
 	"crypto/sha256"
+	"math/big"
+	
 	"github.com/steakknife/bitcoin/addr/public"
 	"github.com/steakknife/bitcoin/network"
 	"github.com/steakknife/bitcoin/util/key"
 	"golang.org/x/crypto/ripemd160"
-	"math/big"
 )
 
 type PrivateKey struct {
@@ -70,8 +71,8 @@ func NewFromExponent(exponent []byte) (pk *PrivateKey, err error) {
 	return NewFromNetworkAndExponent(network.Main, exponent)
 }
 
-func (pk PrivateKey) PublicKey() *public_key.PublicKey {
-	return &public_key.PublicKey{
+func (pk PrivateKey) PublicKey() *public.PublicKey {
+	return &public.PublicKey{
 		Network: pk.Network,
 		Address: pk.PublicAddress(),
 	}
